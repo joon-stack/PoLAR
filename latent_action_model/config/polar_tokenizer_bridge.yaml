@@ -13,7 +13,7 @@ model:
   vq_type: factorized
   factorized_vq_num_radius: 16
   factorized_vq_num_directions: 16
-  factorized_vq_radius_values: null #fill in yours. e.g., "0.0,0.4,0.8,1.2,1.6,2.0,2.4,2.8,3.2,3.6,4.0,4.4,4.8,5.2,5.6,6.0"
+  factorized_vq_radius_values: "0.0,0.2666667,0.5333333,0.8,1.0666667,1.3333333,1.6,1.8666667,2.1333333,2.4,2.6666667,2.9333333,3.2,3.4666667,3.7333333,4.0"
   vq_beta: 0.25
   vq_restart_interval_steps: 10000
   radprog_radial_weight: 1.0
@@ -37,7 +37,7 @@ model:
       lr: 1e-4
       weight_decay: 1e-2
 
-  task_name: null #fill in yours.
+  task_name: polar_tokenizer_bridge
   make_data_pair: &make_data_pair false
 
 data:
@@ -77,4 +77,4 @@ trainer:
       init_args:
         project: polar_lam_bridge
         entity: null
-        name: null #fill in yours.
+        name: polar_tokenizer_bridge

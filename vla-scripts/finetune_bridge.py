@@ -51,7 +51,7 @@ DEFAULT_POLAR_LAM_CONFIG = (
     / "config"
     / "polar_tokenizer_bridge.yaml"
 )
-DEFAULT_POLAR_LAM_CHECKPOINT = Path(__file__).resolve().parents[1] / "weights" / "polar_tokenizer.ckpt"
+DEFAULT_POLAR_LAM_CHECKPOINT = Path(__file__).resolve().parents[1] / "weights" / "polar_tokenizer_bridge.ckpt"
 
 
 from prismatic.models.policy.transformer_utils import MAPBlock
@@ -634,7 +634,9 @@ def finetune(cfg: FinetuneConfig) -> None:
                         wrapped_model.module.vla.save_pretrained(save_dir)
 
                     # Save low-level policy
-                    torch.save(wrapped_model.module.action_decoder.state_dict(), str(run_dir) + f'/action_decoder-{gradient_step_idx}.pt')
+                    action_decoder_state = wrapped_model.module.action_decoder.state_dict()
+                    torch.save(action_decoder_state, Path(run_dir) / f"action_decoder-{gradient_step_idx}.pt")
+                    torch.save(action_decoder_state, Path(run_dir) / "action_decoder.pt")
 
                 # Wait for processor and adapter weights to be saved by main process
                 dist.barrier()

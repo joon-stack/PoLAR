@@ -32,7 +32,7 @@ DEFAULT_POLAR_LAM_CONFIG = (
     / "config"
     / "polar_tokenizer_bridge.yaml"
 )
-DEFAULT_POLAR_LAM_CHECKPOINT = Path(__file__).resolve().parents[1] / "weights" / "polar_tokenizer.ckpt"
+DEFAULT_POLAR_LAM_CHECKPOINT = Path(__file__).resolve().parents[1] / "weights" / "polar_tokenizer_bridge.ckpt"
 
 
 @dataclass

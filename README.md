@@ -12,7 +12,7 @@
 
 Youngjoon Jeong · Jihwan Yu · Minsoo Jo · Junha Chun · Taesup Kim
 
-[![Project Page](https://img.shields.io/badge/Project%20Page-coming%20soon-4285F4?style=for-the-badge)](#)
+[![Project Page](https://img.shields.io/badge/Project%20Page-4285F4?style=for-the-badge)](https://joon-stack.github.io/PoLAR/)
 [![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b?style=for-the-badge&logo=arxiv&logoColor=white)](#citation)
 [![Models](https://img.shields.io/badge/Hugging%20Face-models-FFD21E?style=for-the-badge)](https://huggingface.co/quiet-storm/polar-bridge-vla)
 
@@ -54,7 +54,7 @@ Pinned base dependencies are listed in [`requirements.txt`](requirements.txt). T
 
 ## Data
 
-PoLAR tokenizer and latent VLA training use BridgeData V2 in RLDS format. Set the dataset arguments in the commands below to your local RLDS cache. Downstream action-decoder fine-tuning can use the same Bridge-style RLDS data or a prebuilt offline LeRobot window cache.
+PoLAR tokenizer and latent VLA training use BridgeData V2 in RLDS format. Set the dataset arguments in the commands below to your local RLDS cache. Downstream action-decoder fine-tuning uses RLDS-format data.
 
 ## Checkpoints
 
@@ -89,49 +89,50 @@ torchrun --standalone --nnodes 1 --nproc-per-node 8 main_visual_vq.py fit \
 
 ### Latent VLA Training
 
-```bash
-cd vla-scripts
-
-torchrun --nproc_per_node 8 train.py \
-    --vla.type prism-dinosiglip-224px+mx-bridge \
-    --trackers jsonl \
-    --pretrain_vlm /path/to/prism-dinosiglip-224px-7b \
-    --lam_path /path/to/polar_tokenizer.ckpt \
-    --lam_config_path /path/to/polar_tokenizer_bridge.yaml \
-    --data_root_dir /path/to/rlds_data_collection \
-    --run_root_dir runs/polar-vla
-```
-
-PoLAR uses a five-token discrete interface in the VLA path: `1 radial + 4 direction` tokens. With the default 16-radius/16-direction factorization, radial IDs occupy `<ACT_0>` through `<ACT_15>`, while direction IDs occupy `<ACT_16>` through `<ACT_31>`.
-
-### Downstream Fine-tuning
-
-Bridge/SimplerEnv-style action-decoder fine-tuning:
+The Bridge latent VLA is trained for 50k steps from a Prismatic/OpenVLA-style base VLM and the PoLAR tokenizer checkpoint:
 
 ```bash
-cd vla-scripts
-
-WANDB_MODE=disabled torchrun --standalone --nnodes 1 --nproc-per-node 8 finetune_bridge.py \
-    --vla_path /path/to/pretrained-polar-vla \
-    --lam_path /path/to/polar_tokenizer.ckpt \
-    --lam_config_path /path/to/polar_tokenizer_bridge.yaml \
-    --data_root_dir /path/to/rlds_data \
-    --dataset_name bridge \
-    --run_root_dir runs/polar-simpler
+PRETRAIN_VLM=/path/to/prism-dinosiglip-224px-7b \
+LAM_PATH=weights/polar_tokenizer_bridge.ckpt \
+LAM_CONFIG_PATH=latent_action_model/config/polar_tokenizer_bridge.yaml \
+BRIDGE_DATA_ROOT=/path/to/rlds_bridge_orig \
+RUN_ROOT_DIR=runs/polar-vla \
+bash vla-scripts/train_polar_bridge_vla.sh
 ```
 
-To fine-tune from a prebuilt offline LeRobot window cache, use the same script with `--dataset_format lerobot_cache`:
+The wrapper defaults to 8 GPUs, `--vla.max_steps 50000`, BridgeData V2, JSONL logging, image augmentation, a 20k shuffle buffer, and the five-token PoLAR interface (`1 radial + 4 direction` tokens). The run directory contains `config.yaml`, `config.json`, `dataset_statistics.json`, and `checkpoints/step-*.pt`.
+
+With the default 16-radius/16-direction factorization, radial IDs occupy `<ACT_0>` through `<ACT_15>`, while direction IDs occupy `<ACT_16>` through `<ACT_31>`.
+
+### Convert VLA Checkpoint
+
+Convert the native VLA training checkpoint to Hugging Face format before downstream fine-tuning or evaluation:
 
 ```bash
-WANDB_MODE=disabled torchrun --standalone --nnodes 1 --nproc-per-node 8 finetune_bridge.py \
-    --vla_path /path/to/pretrained-polar-vla \
-    --lam_path /path/to/polar_tokenizer.ckpt \
-    --lam_config_path /path/to/polar_tokenizer_bridge.yaml \
-    --dataset_format lerobot_cache \
-    --lerobot_cache_dir /path/to/lerobot_window_cache \
-    --dataset_name bridge \
-    --run_root_dir runs/polar-simpler
+VLA_RUN_DIR=/path/to/vla_run_dir \
+VLA_CKPT_STEP=050000 \
+LLM_TOKENIZER_PATH=/path/to/llama2-7b-hf \
+OUTPUT_HF_MODEL_LOCAL_PATH=weights/polar_bridge_vla \
+bash vla-scripts/convert_polar_bridge_vla_to_hf.sh
 ```
+
+If `CKPT_NAME` is not set, the wrapper looks for exactly one checkpoint matching `checkpoints/step-050000-*.pt` under `VLA_RUN_DIR`.
+
+### Downstream Action-Decoder Fine-tuning
+
+Fine-tune the downstream action decoder from the converted Bridge latent VLA:
+
+```bash
+VLA_PATH=weights/polar_bridge_vla \
+LAM_PATH=weights/polar_tokenizer_bridge.ckpt \
+LAM_CONFIG_PATH=latent_action_model/config/polar_tokenizer_bridge.yaml \
+DATA_ROOT_DIR=/path/to/rlds_data \
+DATASET_NAME=bridge \
+RUN_ROOT_DIR=runs/polar-action-decoder \
+bash vla-scripts/finetune_polar_action_decoder.sh
+```
+
+The recommended Bridge/Simpler-style setting uses 4 GPUs, batch size 32, 20k steps, checkpoint saves every 5k steps, learning rate `3.5e-4`, no scheduler, shuffle buffer 512, image augmentation, and prediction window size 10. The wrapper also enables train-loop LAM token materialization and lightweight DataLoader prefetching through `POLAR_*` environment variables. Fine-tuning writes the latest action decoder to `action_decoder.pt` in the run directory.
 
 ## Evaluation
 
