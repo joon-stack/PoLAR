@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="PoLAR factorizes transition extent and transition mode in latent actions for robot policy learning.">
+  <meta name="keywords" content="PoLAR, latent actions, representation learning, robot policy learning, hyperbolic geometry, VLA">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PoLAR: Factorizing Extent and Mode in Latent Actions</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="#">
+      <span class="icon"><i class="fas fa-home"></i></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start">
+      <a class="navbar-item" href="#overview">Overview</a>
+      <a class="navbar-item" href="#abstract">Abstract</a>
+      <a class="navbar-item" href="#method">Method</a>
+      <a class="navbar-item" href="#results">Results</a>
+      <a class="navbar-item" href="#rollouts">Rollouts</a>
+      <a class="navbar-item" href="#model-zoo">Model Zoo</a>
+      <a class="navbar-item" href="#analysis">Analysis</a>
+      <a class="navbar-item" href="#citation">BibTeX</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero publication-header">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">
+            PoLAR: Factorizing Extent and Mode in Latent Actions for Robot Policy Learning
+          </h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Youngjoon Jeong</span>
+            <span class="author-block">Jihwan Yu</span>
+            <span class="author-block">Minsoo Jo</span>
+            <span class="author-block">Junha Chun</span>
+            <span class="author-block">Taesup Kim<sup>*</sup></span>
+          </div>
+
+          <div class="is-size-5 publication-authors publication-affiliation">
+            <span class="author-block">Seoul National University</span>
+            <br>
+            <span class="author-note"><sup>*</sup>Corresponding author</span>
+          </div>
+
+          <div class="publication-links">
+            <span class="link-block">
+              <a href="https://arxiv.org/abs/2606.21139" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="ai ai-arxiv"></i></span>
+                <span>arXiv</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="https://github.com/joon-stack/PoLAR" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fab fa-github"></i></span>
+                <span>Code</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#model-zoo" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-cubes"></i></span>
+                <span>Model Zoo</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#citation" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-quote-right"></i></span>
+                <span>BibTeX</span>
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser" id="overview">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <video class="teaser-video" controls playsinline preload="metadata"
+             poster="./static/images/polar_overview_poster.jpg">
+        <source src="./static/videos/polar_overview.mp4" type="video/mp4">
+      </video>
+      <h2 class="subtitle has-text-centered teaser-caption">
+        PoLAR learns latent actions from observation pairs by separating
+        <strong>transition extent</strong> from <strong>transition mode</strong>.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="abstract">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Latent action pretraining learns representations of visual change from pairs of
+            observations, but existing methods typically encode each transition as a single
+            unstructured representation that entangles transition extent and transition mode.
+            We introduce <strong>Polar Latent Actions with Radial structure (PoLAR)</strong>, which
+            imposes a radial-direction structure on latent actions, encouraging radius to encode
+            transition extent and direction to retain transition mode.
+          </p>
+          <p>
+            PoLAR uses temporal offset between two observations as a weak proxy for transition
+            extent, encouraging latent action from observation pairs separated by larger temporal
+            gaps to occupy larger radii. We instantiate this structure in hyperbolic space, whose
+            expanding volume with radius offers a natural fit for more diverse transition modes at
+            larger extents. Across in-task and large-scale pretraining settings, PoLAR improves
+            downstream policy performance in simulation and real-world robot experiments,
+            outperforming latent action baselines and strong pretrained VLAs.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section method-section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3 has-text-centered">Overview</h2>
+        <figure class="paper-figure">
+          <img src="./static/paper_figures/teaser_v3.png"
+               alt="PoLAR factorizes transition extent and mode in latent actions.">
+          <figcaption>
+            <strong>Figure 1.</strong> PoLAR uses temporal offset to order transition extent along
+            radius, allowing similar transition modes to remain in similar directions. Sweeping the
+            radius token with fixed direction increases decoded transition extent.
+          </figcaption>
+        </figure>
+
+        <h2 class="title is-3 has-text-centered" id="evaluation">Evaluation Tasks</h2>
+        <figure class="paper-figure">
+          <img src="./static/paper_figures/fig2_final.png"
+               alt="Evaluation tasks for PoLAR.">
+          <figcaption>
+            <strong>Figure 2.</strong> PoLAR is evaluated across simulated and real-world tabletop
+            manipulation tasks, including RoboMimic, MimicGen, SimplerEnv-WidowX, and real robot tasks.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="results">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+    <div class="paper-grid two-up">
+      <figure class="paper-figure">
+        <img src="./static/paper_figures/avg_success_main_results_compact.png"
+             alt="Simulation results for PoLAR.">
+        <figcaption>
+          <strong>Figure 3.</strong> PoLAR improves continuous latent-action conditioned diffusion
+          policies on RoboMimic and MimicGen, and gives the best VLA success rates on SimplerEnv-WidowX.
+        </figcaption>
+      </figure>
+      <figure class="paper-figure">
+        <img src="./static/paper_figures/real_robot_success.png"
+             alt="Real-world robot results for PoLAR.">
+        <figcaption>
+          <strong>Figure 4.</strong> PoLAR with VLA achieves the highest success rates across three
+          real-robot tasks.
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section real-robot-section" id="rollouts">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Real Robot Rollouts</h2>
+    <p class="rollout-note">Rollouts shown at 2x playback.</p>
+    <div class="rollout-task">
+      <h3>Pick &amp; Place Banana</h3>
+      <div class="rollout-video-grid">
+        <div class="rollout-video-card is-polar">
+          <p><span class="method-name"><strong>PoLAR</strong></span><span class="outcome-badge">Success</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pnp_banana_polar_1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-polar">
+          <p><span class="method-name"><strong>PoLAR</strong></span><span class="outcome-badge">Success</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pnp_banana_polar_2.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-baseline">
+          <p><span class="method-name">UniVLA</span><span class="outcome-badge">Failed</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pnp_banana_univla.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-baseline">
+          <p><span class="method-name">Villa-X</span><span class="outcome-badge">Failed</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pnp_banana_villax.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <div class="rollout-task">
+      <h3>Cup Stack</h3>
+      <div class="rollout-video-grid">
+        <div class="rollout-video-card is-polar">
+          <p><span class="method-name"><strong>PoLAR</strong></span><span class="outcome-badge">Success</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/cup_stack_polar_1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-polar">
+          <p><span class="method-name"><strong>PoLAR</strong></span><span class="outcome-badge">Success</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/cup_stack_polar_2.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-baseline">
+          <p><span class="method-name">&pi;<sub>0.5</sub></span><span class="outcome-badge">Failed</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/cup_stack_pi05.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-baseline">
+          <p><span class="method-name">UniVLA</span><span class="outcome-badge">Failed</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/cup_stack_univla.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <div class="rollout-task">
+      <h3>Open Pot &amp; Banana</h3>
+      <div class="rollout-video-grid">
+        <div class="rollout-video-card is-polar">
+          <p><span class="method-name"><strong>PoLAR</strong></span><span class="outcome-badge">Success</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pot_banana_polar_1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-polar">
+          <p><span class="method-name"><strong>PoLAR</strong></span><span class="outcome-badge">Success</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pot_banana_polar_2.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-baseline">
+          <p><span class="method-name">UniVLA</span><span class="outcome-badge">Failed</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pot_banana_univla.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="rollout-video-card is-baseline">
+          <p><span class="method-name">&pi;<sub>0.5</sub></span><span class="outcome-badge">Failed</span></p>
+          <video controls muted loop playsinline preload="metadata">
+            <source src="./static/real_robot_videos/pot_banana_pi05.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section model-zoo-section" id="model-zoo">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Model Zoo</h2>
+    <p class="model-zoo-intro">
+      Public PoLAR checkpoints are available on Hugging Face.
+    </p>
+    <div class="model-zoo-list">
+      <div class="model-zoo-item">
+        <div class="model-zoo-type">
+          <span class="model-zoo-icon"><i class="fas fa-cube"></i></span>
+          <span>Tokenizer</span>
+        </div>
+        <div class="model-zoo-copy">
+          <h3>PoLAR Tokenizer</h3>
+          <p>Radial-direction latent action tokenizer pretrained on BridgeData V2.</p>
+        </div>
+        <a class="model-zoo-link" href="https://huggingface.co/quiet-storm/polar-tokenizer-bridge">
+          Hugging Face
+          <span class="icon"><i class="fas fa-external-link-alt"></i></span>
+        </a>
+      </div>
+      <div class="model-zoo-item">
+        <div class="model-zoo-type">
+          <span class="model-zoo-icon"><i class="fas fa-robot"></i></span>
+          <span>VLA</span>
+        </div>
+        <div class="model-zoo-copy">
+          <h3>PoLAR VLA</h3>
+          <p>Latent VLA trained with PoLAR action tokens on BridgeData V2.</p>
+        </div>
+        <a class="model-zoo-link" href="https://huggingface.co/quiet-storm/polar-bridge-vla">
+          Hugging Face
+          <span class="icon"><i class="fas fa-external-link-alt"></i></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section diagnostics-section" id="analysis">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Analysis</h2>
+    <div class="paper-grid">
+      <figure class="paper-figure">
+        <img src="./static/paper_figures/state_distance_relative_norm_matched_pair_pastel_set2.png"
+             alt="Temporal offset and radial supervision diagnostics.">
+        <figcaption>
+          <strong>Figure 5.</strong> Temporal offset is an effective proxy for transition extent, and
+          PoLAR radii increase with temporal offset while flat baselines remain nearly constant.
+        </figcaption>
+      </figure>
+    </div>
+
+    <figure class="paper-figure">
+      <img src="./static/paper_figures/radius_sweep_3rows_2.png"
+           alt="Radius controls transition extent.">
+      <figcaption>
+        <strong>Figure 6.</strong> With direction tokens fixed, increasing the radial token produces
+        progressively larger visual transitions.
+      </figcaption>
+    </figure>
+
+    <figure class="paper-figure">
+      <img src="./static/paper_figures/radius_sweep_more_2.png"
+           alt="Additional radius sweep examples.">
+      <figcaption>
+        <strong>Appendix Figure.</strong> Additional radius-sweep examples show the same behavior
+        across more transitions.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section" id="citation">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Citation</h2>
+    <pre><code>@misc{jeong2026polar,
+  title         = {PoLAR: Factorizing Extent and Mode in Latent Actions for Robot Policy Learning},
+  author        = {Youngjoon Jeong and Jihwan Yu and Minsoo Jo and Junha Chun and Taesup Kim},
+  year          = {2026},
+  eprint        = {2606.21139},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.RO},
+  url           = {https://arxiv.org/abs/2606.21139}
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+        Website template adapted from
+        <a href="https://nerfies.github.io/">Nerfies</a>.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('#rollouts video').forEach((video) => {
+    const playbackRate = 2;
+    const setRolloutSpeed = () => {
+      video.defaultPlaybackRate = playbackRate;
+      video.playbackRate = playbackRate;
+    };
+
+    setRolloutSpeed();
+    video.addEventListener('loadedmetadata', setRolloutSpeed);
+    video.addEventListener('play', setRolloutSpeed);
+  });
+</script>
+
+</body>
+</html>
