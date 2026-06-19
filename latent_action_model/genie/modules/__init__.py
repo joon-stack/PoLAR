@@ -1,0 +1,1 @@
+from .lam_visual_vq import VisualVQDINOLatentActionModel
