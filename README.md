@@ -184,4 +184,4 @@ Citation information will be updated when the paper is public. For now, please u
 
 This implementation is based on UniVLA and adapts Prismatic/OpenVLA-style VLA training infrastructure. We thank the UniVLA, OpenVLA/Prismatic, ManiSkill, SimplerEnv, and BridgeData V2 authors for releasing the code, environments, and datasets that make this work possible.
 
-PoLAR is released under the Apache-2.0 license in this repository. Third-party components remain subject to their original licenses; please keep upstream attribution and license notices intact when preparing derivative releases.
+PoLAR is released under the Apache-2.0 license in this repository. Third-party components remain subject to their original licenses; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for upstream attribution and license notes.
