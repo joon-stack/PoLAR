@@ -13,7 +13,7 @@
 Youngjoon Jeong · Jihwan Yu · Minsoo Jo · Junha Chun · Taesup Kim
 
 [![Project Page](https://img.shields.io/badge/Project%20Page-4285F4?style=for-the-badge)](https://joon-stack.github.io/PoLAR/)
-[![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b?style=for-the-badge&logo=arxiv&logoColor=white)](#citation)
+[![arXiv](https://img.shields.io/badge/arXiv-2606.21139-b31b1b?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2606.21139)
 [![Models](https://img.shields.io/badge/Hugging%20Face-models-FFD21E?style=for-the-badge)](https://huggingface.co/quiet-storm/polar-bridge-vla)
 
 
@@ -169,14 +169,13 @@ XLA_PYTHON_CLIENT_PREALLOCATE=false python real2sim_eval_maniskill3.py \
 
 ## Citation
 
-Citation information will be updated when the paper is public. For now, please use:
-
 ```bibtex
 @misc{jeong2026polar,
   title = {PoLAR: Factorizing Extent and Mode in Latent Actions for Robot Policy Learning},
   author = {Jeong, Youngjoon and Yu, Jihwan and Jo, Minsoo and Chun, Junha and Kim, Taesup},
   year = {2026},
-  note = {Manuscript in preparation}
+  eprint = {2606.21139},
+  archivePrefix = {arXiv}
 }
 ```
 
