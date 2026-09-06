@@ -1,9 +1,9 @@
 <div align="center">
 
-# PoLAR
+# PoLAR (CoRL 2026)
 
 **Official PyTorch implementation of**
-### *PoLAR: Factorizing Extent and Mode in Latent Actions for Robot Policy Learning (CoRL 2026)*
+### *PoLAR: Factorizing Extent and Mode in Latent Actions for Robot Policy Learning*
 
 
 [![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
